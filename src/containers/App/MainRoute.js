@@ -6,6 +6,8 @@ import Home from '../../routes/main/Home'
 import CertEdit from '../../routes/main/CertEdit'
 import CertView from '../../routes/main/CertView'
 import CertList from '../../routes/main/CertList'
+import DraftEdit from '../../routes/main/DraftEdit'
+import DraftList from '../../routes/main/DraftList'
 
 const MainRoute = (props) => {
   const {match} = props
@@ -21,11 +23,9 @@ const MainRoute = (props) => {
       <Route exact path={`${match.url}${CERTIFICATE}/${VIEW}/:id`}
              component={CertView}/>
       <Route exact path={`${match.url}${DRAFT}/${EDIT}`}
-             component={CertEdit}/>
+             component={DraftEdit}/>
       <Route exact path={`${match.url}${DRAFT}/${LIST}`}
-             component={CertList}/>
-      <Route exact path={`${match.url}${DRAFT}/${VIEW}/:id`}
-             component={CertView}/>
+             component={DraftList}/>
       <Redirect exact from="/" to={`/${HOME}`}/>
       <Redirect from="*" to="/404"/>
     </Switch>

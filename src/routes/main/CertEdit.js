@@ -21,19 +21,16 @@ const CertEdit = (props) => {
   const loader = useSelector(state => state.progress.loader)
   const chain = useSelector(state => state.chain)
   const {address, contract, ipfs} = chain
-  const {intl, history, location, match} = props
+  const {intl, history, location} = props
   const [coordinate, setCoordinate] = useState({lat: 0, long: 0})
 
   useEffect(() => {
     if (!_.isEmpty(location.state) && !_.isEmpty(location.state.info)) {
       const info = location.state.info
       if (info && info.coordinate) {
-        setCoordinate({
-          lat: info.coordinate.latitude,
-          long: info.coordinate.longitude
-        })
+        setCoordinate(info.coordinate)
       }
-      formRef.current.setFieldsValue(info) // TODO
+      formRef.current.setFieldsValue(info)
     } else {
       if (navigator.geolocation) {
         navigator.geolocation.watchPosition(function (position) {
