@@ -6,7 +6,7 @@ import { PictureOutlined } from '@ant-design/icons'
 import { withRouter } from 'react-router-dom'
 import { ethers } from 'ethers'
 import _ from 'lodash'
-import { ERROR, INFO, SUCCESS } from '../../constants/AppConfigs'
+import { ERROR, INFO, RESULT } from '../../constants/AppConfigs'
 import { openNotificationWithIcon } from '../../components/Messages'
 import ConfirmButton from '../../components/ConfirmButton'
 import { hideLoader, showLoader } from '../../appRedux/actions/Progress'
@@ -23,14 +23,18 @@ const CertEdit = (props) => {
   const {address, contract, ipfs} = chain
   const {intl, history, location} = props
   const [coordinate, setCoordinate] = useState({lat: 0, long: 0})
+  const [id, setId] = useState(null)
+  const [fromDraft, setFromDraft] = useState(false)
 
   useEffect(() => {
     if (!_.isEmpty(location.state) && !_.isEmpty(location.state.info)) {
       const info = location.state.info
-      if (info && info.coordinate) {
+      if (info.coordinate) {
         setCoordinate(info.coordinate)
       }
       formRef.current.setFieldsValue(info)
+      setId(info.id)
+      setFromDraft(true)
     } else {
       if (navigator.geolocation) {
         navigator.geolocation.watchPosition(function (position) {
@@ -42,8 +46,18 @@ const CertEdit = (props) => {
       } else {
         openNotificationWithIcon(INFO, intl.formatMessage({id: 'alert.locationServiceDisabled'}))
       }
+      setFromDraft(false)
     }
   }, [])
+
+  const mint = async (values) => {
+    // check eth balance before mint
+    if (fromDraft) {
+      await mintFromDraft(values)
+    } else {
+      await mintFromScratch(values)
+    }
+  }
 
   const mintFromScratch = async (values) => {
     dispatch(showLoader())
@@ -58,8 +72,29 @@ const CertEdit = (props) => {
         [...ethers.utils.toUtf8Bytes(values.hashtag)]
       ).then((result) => {
         dispatch(hideLoader())
-        openNotificationWithIcon(SUCCESS, intl.formatMessage({id: 'alert.success.mint'}))
-        history.push('/') // TODO
+        history.push(`/${RESULT}`)
+      }).catch((error) => {
+        dispatch(hideLoader())
+        openNotificationWithIcon(ERROR, error.message)
+      })
+    } else {
+      dispatch(hideLoader())
+      openNotificationWithIcon(ERROR, intl.formatMessage({id: 'alert.fail2UploadIPFS'}))
+    }
+  }
+
+  const mintFromDraft = async (values) => {
+    dispatch(showLoader())
+    const photoHash = await uploadIPFS({ipfs, file: values.images[0]})
+    if (photoHash) {
+      contract.mintFromDraft(
+        id,
+        [...ethers.utils.toUtf8Bytes(values.description)],
+        photoHash,
+        [...ethers.utils.toUtf8Bytes(values.hashtag)]
+      ).then((result) => {
+        dispatch(hideLoader())
+        history.push(`/${RESULT}`)
       }).catch((error) => {
         dispatch(hideLoader())
         openNotificationWithIcon(ERROR, error.message)
@@ -91,7 +126,7 @@ const CertEdit = (props) => {
         layout={'vertical'}
         initialValues={{timestamp: Math.floor(Date.now() / 1000)}}
         ref={formRef}
-        onFinish={mintFromScratch}>
+        onFinish={mint}>
         <FormItem
           name="account"
           label={intl.formatMessage({id: 'account'})}>
