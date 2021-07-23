@@ -4,14 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { FormattedMessage, injectIntl } from 'react-intl'
 import { isMobile } from 'react-device-detect'
 import { ethers } from 'ethers'
-import _ from 'lodash'
-import {
-  CONTRACT_ADDRESS,
-  COPYRIGHT_COMPANY,
-  ERROR,
-  RPC_PROVIDER,
-  STORAGE_KEY
-} from '../../constants/AppConfigs'
+import { CONTRACT_ADDRESS, COPYRIGHT_COMPANY, ERROR, RPC_PROVIDER, STORAGE_KEY } from '../../constants/AppConfigs'
 import { NAV_STYLE_DRAWER, NAV_STYLE_FIXED, NAV_STYLE_MINI_SIDEBAR, TAB_SIZE } from '../../constants/ThemeSetting'
 import { decrypt, encrypt } from '../../util/crypto'
 import NikkiNFT from '../../artifacts/contracts/NikkiNFT.sol/NikkiNFT.json'
@@ -82,11 +75,12 @@ const MainApp = (props) => {
   const setWallet = async (wallet) => {
     // Setup contract
     const provider = new ethers.providers.JsonRpcProvider(RPC_PROVIDER)
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, NikkiNFT.abi, wallet.connect(provider))
+    const signer = wallet.connect(provider)
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, NikkiNFT.abi, signer)
     // Get user address
-    const address = await wallet.getAddress()
+    const address = await signer.getAddress()
 
-    dispatch(setContract({contract, address}))
+    dispatch(setContract({contract, signer, address}))
     setConnected(true)
   }
 

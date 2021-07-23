@@ -1,3 +1,5 @@
+import { ethers } from 'ethers'
+
 export const COPYRIGHT_COMPANY = 'Xyon. All Rights Reserved.'
 export const PROJECT_NAME = 'Nikki NFT'
 export const STORAGE_KEY = 'nkkcre127'
@@ -48,3 +50,5 @@ export const MENUS = [
     title: 'view.my.cert'
   }
 ]
+
+export const ISSUE_FEE = ethers.utils.parseEther('10')

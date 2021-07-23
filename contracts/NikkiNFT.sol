@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 //uint256 constant RESOLUTION = 1000000000000000;
 struct Coordinate {
@@ -31,16 +32,19 @@ struct Certificate {
     uint256 issuedAt;
 }
 
-contract NikkiNFT is ERC721Enumerable {
+contract NikkiNFT is Ownable, ERC721Enumerable {
     using Counters for Counters.Counter;
 
     string private _baseTokenURI;
+
+    uint private issueFee = 10 ether;
 
     Counters.Counter private idTracker;
     mapping (uint256 => Draft) drafts;
     mapping (address => uint256[]) draftIdsPerAccount;
     mapping (uint256 => Certificate) certificates;
 
+    event SetIssueFee(uint256 fee);
     event SetDraft(uint256 id, address account, uint[] title, uint256 timestamp, Coordinate location);
     event Mint(uint256 id, address account, uint[] title, uint256 timestamp, Coordinate location, uint[] description, string fileHash, uint[] hashtag);
 
@@ -64,6 +68,11 @@ contract NikkiNFT is ERC721Enumerable {
 
         // TODO: If there is a baseURI but no tokenURI, concatenate the tokenID to the baseURI.
         return _baseTokenURI;
+    }
+
+    function setIssueFee(uint _fee) external onlyOwner {
+        issueFee = _fee;
+        emit SetIssueFee(_fee);
     }
 
     function setDraft(uint[] memory _title, uint256 _timestamp, Coordinate memory _location) external {
@@ -92,14 +101,22 @@ contract NikkiNFT is ERC721Enumerable {
         return (draftIdsPerAccount[msg.sender], _drafts);
     }
 
-    function mintFromDraft(uint256 _id, uint[] memory _description, string memory _fileHash, uint[] memory _hashtag) external {
+    function enforceCheckIssueFee() internal view {
+        require(msg.value >= issueFee, "Must be larger than issue fee");
+    }
+
+    function mintFromDraft(uint256 _id, uint[] memory _description, string memory _fileHash, uint[] memory _hashtag) external payable {
+        enforceCheckIssueFee();
+
         Draft memory _draft = drafts[_id];
         require(msg.sender == _draft.account, "Only user self can call this function");
         mint(_id, msg.sender, _draft.title, _draft.timestamp, _draft.location, _description, _fileHash, _hashtag);
         drafts[_id].issuedAt = block.timestamp;
     }
 
-    function mintFromScratch(uint[] memory _title, uint256 _timestamp, Coordinate memory _location, uint[] memory _description, string memory _fileHash, uint[] memory _hashtag) external {
+    function mintFromScratch(uint[] memory _title, uint256 _timestamp, Coordinate memory _location, uint[] memory _description, string memory _fileHash, uint[] memory _hashtag) external payable {
+        enforceCheckIssueFee();
+
         uint256 _id = idTracker.current();
         mint(_id, msg.sender, _title, _timestamp, _location, _description, _fileHash, _hashtag);
         idTracker.increment();

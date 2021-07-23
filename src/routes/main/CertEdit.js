@@ -6,7 +6,7 @@ import { PictureOutlined } from '@ant-design/icons'
 import { withRouter } from 'react-router-dom'
 import { ethers } from 'ethers'
 import _ from 'lodash'
-import { ERROR, INFO, RESULT } from '../../constants/AppConfigs'
+import { ERROR, INFO, ISSUE_FEE, RESULT } from '../../constants/AppConfigs'
 import { openNotificationWithIcon } from '../../components/Messages'
 import ConfirmButton from '../../components/ConfirmButton'
 import { hideLoader, showLoader } from '../../appRedux/actions/Progress'
@@ -20,7 +20,7 @@ const CertEdit = (props) => {
   const dispatch = useDispatch()
   const loader = useSelector(state => state.progress.loader)
   const chain = useSelector(state => state.chain)
-  const {address, contract, ipfs} = chain
+  const {signer, address, contract, ipfs} = chain
   const {intl, history, location} = props
   const [coordinate, setCoordinate] = useState({lat: 0, long: 0})
   const [id, setId] = useState(null)
@@ -51,7 +51,11 @@ const CertEdit = (props) => {
   }, [])
 
   const mint = async (values) => {
-    // check eth balance before mint
+    const balance = await signer.getBalance()
+    if (balance.lt(ISSUE_FEE)) {
+      openNotificationWithIcon(ERROR, intl.formatMessage({id: 'alert.insufficientBalance'}))
+      return
+    }
     if (fromDraft) {
       await mintFromDraft(values)
     } else {
@@ -69,7 +73,8 @@ const CertEdit = (props) => {
         coordinate,
         [...ethers.utils.toUtf8Bytes(values.description)],
         photoHash,
-        [...ethers.utils.toUtf8Bytes(values.hashtag)]
+        [...ethers.utils.toUtf8Bytes(values.hashtag)],
+        {value: ISSUE_FEE}
       ).then((result) => {
         dispatch(hideLoader())
         history.push(`/${RESULT}`)
@@ -91,7 +96,8 @@ const CertEdit = (props) => {
         id,
         [...ethers.utils.toUtf8Bytes(values.description)],
         photoHash,
-        [...ethers.utils.toUtf8Bytes(values.hashtag)]
+        [...ethers.utils.toUtf8Bytes(values.hashtag)],
+        {value: ISSUE_FEE}
       ).then((result) => {
         dispatch(hideLoader())
         history.push(`/${RESULT}`)
