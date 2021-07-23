@@ -9,7 +9,7 @@ const MintResult = (props) => {
   return (
     <Result
       status="success"
-      title={intl.formatMessage({id: 'alert.success.mint'})}
+      title={intl.formatMessage({id: 'alert.success.issue'})}
       extra={[
         <Link className="gx-btn gx-btn-primary" to="/"><FormattedMessage id="go.home"/></Link>
       ]}

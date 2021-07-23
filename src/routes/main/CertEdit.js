@@ -198,7 +198,7 @@ const CertEdit = (props) => {
           </Upload.Dragger>
         </FormItem>
       </Form>
-      <ConfirmButton intl={intl} form={formRef} btnTitle={'request'} confirmEnabled={false}/>
+      <ConfirmButton intl={intl} form={formRef} btnTitle={'issue'} confirmEnabled={false}/>
     </Spin>
   )
 }

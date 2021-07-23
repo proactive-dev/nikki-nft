@@ -56,7 +56,7 @@ const DraftList = (props) => {
     <Spin spinning={loader}>
       <List
         bordered
-        header={<div>{drafts.length} {intl.formatMessage({id: 'draft'})}</div>}
+        header={<div>{intl.formatMessage({id: 'issue.pending'})}</div>}
         dataSource={drafts}
         renderItem={item =>
           <List.Item key={item.id}>

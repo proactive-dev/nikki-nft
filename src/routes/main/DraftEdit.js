@@ -43,7 +43,7 @@ const DraftEdit = (props) => {
       coordinate
     ).then((result) => {
       dispatch(hideLoader())
-      openNotificationWithIcon(SUCCESS, intl.formatMessage({id: 'alert.success.save'}))
+      openNotificationWithIcon(SUCCESS, intl.formatMessage({id: 'alert.success.issue.provisional'}))
       history.push(`/${DRAFT}/${LIST}`)
     }).catch((error) => {
       dispatch(hideLoader())
@@ -87,7 +87,7 @@ const DraftEdit = (props) => {
           <span className="ant-input gx-mt-1 gx-mb-1">{coordinateAsString(coordinate || {})}</span>
         </FormItem>
       </Form>
-      <ConfirmButton intl={intl} form={formRef} btnTitle={'request'} confirmEnabled={false}/>
+      <ConfirmButton intl={intl} form={formRef} btnTitle={'issue.provisional'} confirmEnabled={false}/>
     </Spin>
   )
 }

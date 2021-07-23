@@ -33,7 +33,7 @@ const CertViewForm = (props) => {
       <FormItem name="file" label={intl.formatMessage({id: 'image'})}>
         <Image className="gx-mt-1 gx-mb-1" src={ipfsLink(fileHash)} alt={intl.formatMessage({id: 'image'})}/>
       </FormItem>
-      <FormItem name="issuedAt" label={intl.formatMessage({id: 'issuedAt'})}>
+      <FormItem name="issuedAt" label={intl.formatMessage({id: 'issue.date'})}>
         <span className="ant-input gx-mt-1 gx-mb-1">{issuedAt || ''}</span>
       </FormItem>
     </Form>

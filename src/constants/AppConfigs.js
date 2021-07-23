@@ -35,19 +35,19 @@ export const RESULT = 'result'
 export const MENUS = [
   {
     path: `${CERTIFICATE}/${EDIT}`,
-    title: 'issue.certificate'
+    title: 'issue.new'
   },
   {
     path: `${DRAFT}/${EDIT}`,
-    title: 'issue.certificate'
+    title: 'issue.provisional'
   },
   {
     path: `${DRAFT}/${LIST}`,
-    title: 'issue.certificate'
+    title: 'issue.pending'
   },
   {
     path: `${CERTIFICATE}/${LIST}`,
-    title: 'view.my.cert'
+    title: 'issued.list'
   }
 ]
 
