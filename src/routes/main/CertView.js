@@ -33,7 +33,6 @@ const CertView = (props) => {
     dispatch(showLoader())
     contract.getCertificate(id).then((result) => {
       dispatch(hideLoader())
-      console.log(result)
       if (_.isEmpty(result)) {
         openNotificationWithIcon(ERROR, intl.formatMessage({id: 'alert.emptyData'}))
         window.history.back()

@@ -25,7 +25,6 @@ const DraftList = (props) => {
     contract.getDrafts().then((result) => {
       dispatch(hideLoader())
       let _drafts = []
-      console.log(result)
       result[0].forEach((id, index) => {
         if (result[1][index]['issuedAt'].eq(0)) {
           _drafts.push({
