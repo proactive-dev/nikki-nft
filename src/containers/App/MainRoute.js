@@ -1,13 +1,14 @@
 import React from 'react'
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom'
 import { injectIntl } from 'react-intl'
-import { CERTIFICATE, DRAFT, EDIT, HOME, LIST, VIEW } from '../../constants/AppConfigs'
+import { CERTIFICATE, DRAFT, EDIT, HOME, LIST, RESULT, VIEW } from '../../constants/AppConfigs'
 import Home from '../../routes/main/Home'
 import CertEdit from '../../routes/main/CertEdit'
 import CertView from '../../routes/main/CertView'
 import CertList from '../../routes/main/CertList'
 import DraftEdit from '../../routes/main/DraftEdit'
 import DraftList from '../../routes/main/DraftList'
+import MintResult from '../../routes/main/MintResult'
 
 const MainRoute = (props) => {
   const {match} = props
@@ -26,6 +27,8 @@ const MainRoute = (props) => {
              component={DraftEdit}/>
       <Route exact path={`${match.url}${DRAFT}/${LIST}`}
              component={DraftList}/>
+      <Route exact path={`${match.url}${RESULT}`}
+             component={MintResult}/>
       <Redirect exact from="/" to={`/${HOME}`}/>
       <Redirect from="*" to="/404"/>
     </Switch>

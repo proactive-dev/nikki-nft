@@ -23,12 +23,12 @@ export const RPC_PROVIDER = process.env.NODE_ENV === 'production' ? process.env.
 export const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS
 
 export const HOME = 'home'
-export const NEW = 'new'
 export const EDIT = 'edit'
 export const VIEW = 'view'
 export const LIST = 'list'
 export const CERTIFICATE = 'certificate'
 export const DRAFT = 'draft'
+export const RESULT = 'result'
 
 export const MENUS = [
   {
