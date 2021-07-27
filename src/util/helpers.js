@@ -140,7 +140,7 @@ export const bigNumberArrayToString = (bigNumberArray) => {
 }
 
 export const coordWithResolution = (value) => {
-  return value * COORDINATE_RESOLUTION
+  return new BigNumber(value * COORDINATE_RESOLUTION).toFixed(0)
 }
 
 export const coordWithoutResolution = (value) => {

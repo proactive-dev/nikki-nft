@@ -17,7 +17,7 @@ export const ERROR = 'error'
 export const INFO = 'info'
 
 export const COMMON_DATE_FORMAT = 'YYYY/MM/DD'
-export const COORDINATE_RESOLUTION = 1000000000000000;
+export const COORDINATE_RESOLUTION = 10000000000;
 export const DEFAULT_PRECISION = 2
 export const DEFAULT_DECIMALS = 18
 
