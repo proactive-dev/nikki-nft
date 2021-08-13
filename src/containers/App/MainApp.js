@@ -1,118 +1,109 @@
-import React, { Fragment, useEffect, useState } from 'react'
-import { Alert, Button, Col, Layout, Modal, Row } from 'antd'
+import React, { Fragment, useCallback, useEffect, useState } from 'react'
+import { Alert, Button, Col, Layout, Row } from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
 import { FormattedMessage, injectIntl } from 'react-intl'
-import { isMobile } from 'react-device-detect'
 import { ethers } from 'ethers'
-import { CONTRACT_ADDRESS, COPYRIGHT_COMPANY, ERROR, RPC_PROVIDER, STORAGE_KEY } from '../../constants/AppConfigs'
+import Web3Modal from 'web3modal'
+import Torus from '@toruslabs/torus-embed'
+import { CONTRACT_ADDRESS, COPYRIGHT_COMPANY, RPC_PROVIDER } from '../../constants/AppConfigs'
 import { NAV_STYLE_DRAWER, NAV_STYLE_FIXED, NAV_STYLE_MINI_SIDEBAR, TAB_SIZE } from '../../constants/ThemeSetting'
-import { decrypt, encrypt } from '../../util/crypto'
 import NikkiNFT from '../../artifacts/contracts/NikkiNFT.sol/NikkiNFT.json'
 import Sidebar from '../Sidebar/index'
 import TopBar from '../../components/TopBar'
-import { openNotificationWithIcon } from '../../components/Messages'
-import MetaMaskButton from '../../components/MetaMaskButton'
-import WalletCreateModal from '../../components/WalletCreateModal'
-import WalletRestoreModal from '../../components/WalletRestoreModal'
 import { setContract, setIPFS } from '../../appRedux/actions/Chain'
 import MainRoute from './MainRoute'
-import TermsModal from '../../components/TermsModal'
 
 const {Content, Footer} = Layout
-const {confirm} = Modal
+
+const providerOptions = {
+  torus: {
+    package: Torus,
+    options: {
+      networkParams: {
+        host: RPC_PROVIDER
+      }
+    }
+  }
+}
 
 const ipfsClient = require('ipfs-http-client')
 const ipfs = ipfsClient({host: 'ipfs.infura.io', port: 5001, protocol: 'https'})
+
+let web3Modal
+if (typeof window !== 'undefined') {
+  web3Modal = new Web3Modal({
+    cacheProvider: true,
+    providerOptions
+  })
+}
 
 const MainApp = (props) => {
   const {intl} = props
   const dispatch = useDispatch()
   const settings = useSelector(state => state.settings)
+  const loader = useSelector(state => state.progress.loader)
   const {navStyle, width} = settings
   const [connected, setConnected] = useState(false)
-  const [visibleCreateModal, setVisibleCreateModal] = useState(false)
-  const [visibleRestoreModal, setVisibleRestoreModal] = useState(false)
-  const [visibleTermsModal, setVisibleTermsModal] = useState(false)
+  const [web3Provider, setWeb3Provider] = useState()
 
-  useEffect(() => {
-    checkSavedInfo()
-    dispatch(setIPFS(ipfs))
-  }, [])
+  const connect = useCallback(async function () {
+    web3Modal.clearCachedProvider()
+    const provider = await web3Modal.connect()
 
-  const checkSavedInfo = () => {
-    try {
-      const savedKey = JSON.parse(decrypt(localStorage.getItem(STORAGE_KEY)))
-      if (savedKey) {
-        confirm({
-          title: intl.formatMessage({id: 'load.account'}),
-          content: intl.formatMessage({id: 'confirm.load.description'}),
-          okText: intl.formatMessage({id: 'load'}),
-          onOk: () => {
-            setWallet(new ethers.Wallet(savedKey))
-          }
-        })
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const connectMetaMask = async () => {
-    if (window.ethereum) { // Modern dapp browsers...
-      const provider = new ethers.providers.Web3Provider(window.ethereum)
-      try {
-        await window.ethereum.enable()
-        setWallet(provider.getSigner())
-      } catch (error) {
-        openNotificationWithIcon(ERROR, intl.formatMessage({id: 'alert.fail2ConnectAccount'}))
-        console.log(error)
-      }
-    } else if (window.web3) { // Legacy dapp browsers...
-      console.log('Injected web3 detected.')
-    }
-  }
-
-  const setWallet = async (wallet) => {
-    // Setup contract
-    const provider = new ethers.providers.JsonRpcProvider(RPC_PROVIDER)
-    const signer = wallet.connect(provider)
+    const web3Provider = new ethers.providers.Web3Provider(provider)
+    const signer = web3Provider.getSigner()
     const contract = new ethers.Contract(CONTRACT_ADDRESS, NikkiNFT.abi, signer)
     // Get user address
     const address = await signer.getAddress()
 
     dispatch(setContract({contract, signer, address}))
+    setWeb3Provider(web3Provider)
     setConnected(true)
-  }
+  }, [])
 
-  const onCreate = (data) => {
-    setVisibleCreateModal(false)
-    showConfirmSaveInfo(data)
-  }
-
-  const onRestore = (data) => {
-    setVisibleRestoreModal(false)
-    showConfirmSaveInfo(data)
-  }
-
-  const onAgreeTerms = () => {
-    setVisibleTermsModal(false)
-    setVisibleCreateModal(true)
-  }
-
-  const showConfirmSaveInfo = (data) => {
-    confirm({
-      title: intl.formatMessage({id: 'save.account'}),
-      content: intl.formatMessage({id: 'confirm.save.description'}),
-      okText: intl.formatMessage({id: 'save'}),
-      onOk: () => {
-        localStorage.setItem(STORAGE_KEY, encrypt(JSON.stringify(data.privateKey)))
-        setWallet(data)
-      },
-      onCancel: () => {
-        setWallet(data)
+  const disconnect = useCallback(
+    async function () {
+      await web3Modal.clearCachedProvider()
+      if (web3Provider?.disconnect && typeof web3Provider.disconnect === 'function') {
+        await web3Provider.disconnect()
       }
-    })
-  }
+      dispatch(setContract({contract: null, certContract: null, address: null}))
+    },
+    [web3Provider]
+  )
+
+  useEffect(() => {
+    dispatch(setIPFS(ipfs))
+  }, [])
+
+  useEffect(() => {
+    if (web3Modal.cachedProvider) {
+      connect()
+    }
+  }, [connect])
+
+  useEffect(() => {
+    if (web3Provider?.on) {
+      const handleAccountsChanged = (accounts) => {
+        dispatch(setContract({address: accounts[0].address}))
+      }
+
+      const handleDisconnect = (error) => {
+        disconnect()
+      }
+
+      web3Provider.on('accountsChanged', handleAccountsChanged)
+      web3Provider.on('disconnect', handleDisconnect)
+
+      // Subscription Cleanup
+      return () => {
+        if (web3Provider.removeListener) {
+          web3Provider.removeListener('accountsChanged', handleAccountsChanged)
+          web3Provider.removeListener('disconnect', handleDisconnect)
+        }
+      }
+    }
+  }, [web3Provider, disconnect])
 
   const getSidebar = () => {
     if (width < TAB_SIZE) {
@@ -138,52 +129,19 @@ const MainApp = (props) => {
         <Content className="gx-layout-content gx-container-wrap">
           <div className="gx-main-content-wrapper">
             {
-              connected ?
+              (web3Provider && connected) ?
                 <MainRoute/>
                 :
                 <Fragment>
                   <Alert message={intl.formatMessage({id: 'alert.connectAccount'})} type="warning" showIcon/>
                   <Row className="gx-m-3 gx-p-2">
-                    {
-                      !isMobile &&
-                      <Col span={8} xxl={8} xl={8} lg={8} md={12} sm={12} xs={24}>
-                        <MetaMaskButton onClick={connectMetaMask}/>
-                      </Col>
-                    }
                     <Col span={8} xxl={8} xl={8} lg={8} md={12} sm={12} xs={24}>
-                      <Button className="login-form-button" size="large" type="primary"
-                              onClick={() => setVisibleTermsModal(true)}>
-                        <FormattedMessage id="create"/>
-                      </Button>
-                    </Col>
-                    <Col span={8} xxl={8} xl={8} lg={8} md={12} sm={12} xs={24}>
-                      <Button className="login-form-button" size="large" type="secondary"
-                              onClick={() => setVisibleRestoreModal(true)}>
-                        <FormattedMessage id="import.or.restore"/>
+                      <Button className="login-form-button" size="large" type="primary" loading={loader}
+                              onClick={connect}>
+                        <FormattedMessage id="connect"/>
                       </Button>
                     </Col>
                   </Row>
-                  {
-                    visibleCreateModal &&
-                    <WalletCreateModal
-                      intl={intl}
-                      onOk={onCreate}
-                      onCancel={() => setVisibleCreateModal(false)}/>
-                  }
-                  {
-                    visibleRestoreModal &&
-                    <WalletRestoreModal
-                      intl={intl}
-                      onOk={onRestore}
-                      onCancel={() => setVisibleRestoreModal(false)}/>
-                  }
-                  {
-                    visibleTermsModal &&
-                    <TermsModal
-                      intl={intl}
-                      onOk={onAgreeTerms}
-                      onCancel={() => setVisibleTermsModal(false)}/>
-                  }
                 </Fragment>
             }
           </div>
