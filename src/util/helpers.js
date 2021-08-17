@@ -1,7 +1,13 @@
 import _ from 'lodash'
 import { BigNumber } from 'bignumber.js'
 import Moment from 'moment'
-import { COMMON_DATE_FORMAT, COORDINATE_RESOLUTION, DEFAULT_DECIMALS, DEFAULT_PRECISION } from '../constants/AppConfigs'
+import {
+  CHAIN_ID,
+  COMMON_DATE_FORMAT,
+  COORDINATE_RESOLUTION,
+  DEFAULT_DECIMALS,
+  DEFAULT_PRECISION
+} from '../constants/AppConfigs'
 
 // main helper functions
 
@@ -14,6 +20,10 @@ export const matches = (array1, array2) => {
 
   array1 = array1.filter(val => !_.some(array2, val))
   return _.isEmpty(array1)
+}
+
+export const isValidChain = (chainId) => {
+  return chainId === CHAIN_ID
 }
 
 export const isPositive = (value) => {
