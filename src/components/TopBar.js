@@ -4,10 +4,11 @@ import { Link } from 'react-router-dom'
 import { Layout } from 'antd'
 import { toggleCollapsedSideNav } from '../appRedux/actions/Setting'
 import { NAV_STYLE_DRAWER, NAV_STYLE_FIXED, NAV_STYLE_MINI_SIDEBAR, TAB_SIZE } from '../constants/ThemeSetting'
+import AccountInfo from './AccountInfo'
 
 const {Header} = Layout
 
-const TopBar = () => {
+const TopBar = (props) => {
   const dispatch = useDispatch()
   const settings = useSelector(state => state.settings)
   const {navCollapsed, navStyle, width} = settings
@@ -27,6 +28,11 @@ const TopBar = () => {
       <Link to="/" className="gx-d-block gx-d-lg-none gx-pointer">
         <img alt="" src={require('assets/images/w-logo.svg')}/>
       </Link>
+      <ul className="gx-header-notifications gx-ml-auto">
+        <li className="gx-user-nav">
+          <AccountInfo {...props}/>
+        </li>
+      </ul>
     </Header>
   )
 }

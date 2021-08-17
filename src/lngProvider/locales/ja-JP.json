@@ -56,6 +56,7 @@
   "description": "内容",
   "destination": "送信先",
   "detail": "詳細",
+  "disconnect": "接続解除",
   "error.404": "エラーが発生しました。ページが見つかりません！",
   "error.500": "すみません、サーバーがダウンしました。",
   "expire.date": "有効期限",

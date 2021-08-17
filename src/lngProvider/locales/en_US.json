@@ -56,6 +56,7 @@
   "description": "Description",
   "destination": "Destination",
   "detail": "Details",
+  "disconnect": "Disconnect",
   "error.404": "Oops, an error has occurred. Page not found!",
   "error.500": "Sorry, server goes wrong.",
   "expire.date": "Expire at",

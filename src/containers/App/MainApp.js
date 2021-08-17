@@ -1,7 +1,7 @@
 import React, { Fragment, useCallback, useEffect, useState } from 'react'
 import { Alert, Button, Col, Layout, Row } from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
-import { FormattedMessage, injectIntl } from 'react-intl'
+import { injectIntl } from 'react-intl'
 import { ethers } from 'ethers'
 import Web3Modal from 'web3modal'
 import Torus from '@toruslabs/torus-embed'
@@ -41,7 +41,6 @@ const MainApp = (props) => {
   const {intl} = props
   const dispatch = useDispatch()
   const settings = useSelector(state => state.settings)
-  const loader = useSelector(state => state.progress.loader)
   const {navStyle, width} = settings
   const [connected, setConnected] = useState(false)
   const [web3Provider, setWeb3Provider] = useState()
@@ -125,7 +124,11 @@ const MainApp = (props) => {
     <Layout className="gx-app-layout">
       {getSidebar()}
       <Layout>
-        <TopBar/>
+        <TopBar
+          connected={connected}
+          connect={connect}
+          disconnect={disconnect}
+        />
         <Content className="gx-layout-content gx-container-wrap">
           <div className="gx-main-content-wrapper">
             {
@@ -134,14 +137,6 @@ const MainApp = (props) => {
                 :
                 <Fragment>
                   <Alert message={intl.formatMessage({id: 'alert.connectAccount'})} type="warning" showIcon/>
-                  <Row className="gx-m-3 gx-p-2">
-                    <Col span={8} xxl={8} xl={8} lg={8} md={12} sm={12} xs={24}>
-                      <Button className="login-form-button" size="large" type="primary" loading={loader}
-                              onClick={connect}>
-                        <FormattedMessage id="connect"/>
-                      </Button>
-                    </Col>
-                  </Row>
                 </Fragment>
             }
           </div>
