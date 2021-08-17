@@ -42,7 +42,7 @@ const SidebarLogo = () => {
       <Link to="/" className="gx-site-logo">
         {
           themeType === THEME_TYPE_LITE ?
-            <img alt="" src={require('assets/images/logo-white.svg')}/>
+            <img alt="" src={require('assets/images/logo.svg')}/>
             :
             <img alt="" src={require('assets/images/logo.svg')}/>
         }
