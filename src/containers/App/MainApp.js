@@ -5,7 +5,7 @@ import { injectIntl } from 'react-intl'
 import { ethers } from 'ethers'
 import Web3Modal from 'web3modal'
 import Torus from '@toruslabs/torus-embed'
-import { CONTRACT_ADDRESS, COPYRIGHT_COMPANY, ERROR, INFO, RPC_PROVIDER } from '../../constants/AppConfigs'
+import { CHAIN_ID, CONTRACT_ADDRESS, COPYRIGHT_COMPANY, ERROR, INFO, RPC_PROVIDER } from '../../constants/AppConfigs'
 import { NAV_STYLE_DRAWER, NAV_STYLE_FIXED, NAV_STYLE_MINI_SIDEBAR, TAB_SIZE } from '../../constants/ThemeSetting'
 import NikkiNFT from '../../artifacts/contracts/NikkiNFT.sol/NikkiNFT.json'
 import Sidebar from '../Sidebar/index'
@@ -22,7 +22,9 @@ const providerOptions = {
     package: Torus,
     options: {
       networkParams: {
-        host: RPC_PROVIDER
+        host: RPC_PROVIDER,
+        chainId: CHAIN_ID,
+        networkId: CHAIN_ID
       }
     }
   }
